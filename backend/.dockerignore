@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+target/
+*.log
+*.md
+DEVELOPER_NOTES.md
+LAUNCH_CHECKLIST.md
+docker-compose*.yml
+.dockerignore
+render.yaml

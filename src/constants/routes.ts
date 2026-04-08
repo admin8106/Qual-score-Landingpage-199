@@ -1,0 +1,18 @@
+export const ROUTES = {
+  LANDING: '/',
+  CHECKOUT: '/checkout',
+  DETAILS: '/details',
+  DIAGNOSTIC: '/diagnostic',
+  ANALYSIS: '/analysis',
+  REPORT: '/report',
+  BOOKING: '/booking',
+  ADMIN: '/admin',
+  ADMIN_LOGIN: '/admin/login',
+  ADMIN_ANALYTICS: '/admin/analytics',
+  ADMIN_OPS: '/admin/ops',
+  ADMIN_LAUNCH: '/admin/launch',
+  ADMIN_INTEGRATIONS: '/admin/integrations',
+  ADMIN_FLAGS: '/admin/flags',
+  ADMIN_HEALTH: '/admin/health',
+  ADMIN_WEBHOOKS: '/admin/webhooks',
+} as const;
