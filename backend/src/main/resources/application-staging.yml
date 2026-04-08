@@ -1,0 +1,43 @@
+spring:
+  jpa:
+    show-sql: false
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    out-of-order: false
+
+app:
+  environment: staging
+  base-url: ${FRONTEND_URL:https://staging.qualscore.in}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+
+integrations:
+  openai:
+    enabled: ${OPENAI_ENABLED:false}
+
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  public-rpm: ${RATE_LIMIT_PUBLIC_RPM:120}
+  admin-rpm: ${RATE_LIMIT_ADMIN_RPM:240}
+
+cors:
+  allowed-origins: >
+    ${CORS_ALLOWED_ORIGINS:https://staging.qualscore.in}
+
+logging:
+  level:
+    root: INFO
+    com.qualscore: DEBUG
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.flywaydb: INFO

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="APP_NAME"    source="spring.application.name" defaultValue="qualcore"/>
+    <springProperty scope="context" name="APP_ENV"     source="app.environment"          defaultValue="local"/>
+    <springProperty scope="context" name="LOG_LEVEL"   source="logging.level.com.qualscore" defaultValue="DEBUG"/>
+
+    <!-- ─── Dev/Local: human-readable coloured console output ────────────── -->
+    <springProfile name="local,default">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%X{requestId:--})] [%magenta(%X{remoteIp:--})] %yellow(%logger{30}) - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.qualscore" level="${LOG_LEVEL}" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+        <logger name="org.springframework.web"             level="WARN"/>
+        <logger name="org.hibernate.SQL"                   level="WARN"/>
+        <logger name="org.hibernate.type.descriptor.sql"   level="WARN"/>
+        <logger name="org.flywaydb"                        level="INFO"/>
+    </springProfile>
+
+    <!-- ─── Test: minimal noise, no colour ──────────────────────────────── -->
+    <springProfile name="test">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} %-5level %logger{30} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+        <logger name="com.qualscore" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+    </springProfile>
+
+    <!-- ─── Prod: structured JSON logs to stdout (for log aggregators) ───── -->
+    <springProfile name="prod">
+        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%level","app":"${APP_NAME}","env":"${APP_ENV}","requestId":"%X{requestId:-}","remoteIp":"%X{remoteIp:-}","logger":"%logger{40}","message":"%replace(%msg){'\"','\\\"'}","thread":"%thread"}%n</pattern>
+            </encoder>
+        </appender>
+
+        <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="CONSOLE_JSON"/>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE"/>
+        </root>
+        <logger name="com.qualscore" level="INFO" additivity="false">
+            <appender-ref ref="ASYNC_CONSOLE"/>
+        </logger>
+        <logger name="org.springframework.web"             level="WARN"/>
+        <logger name="org.hibernate.SQL"                   level="WARN"/>
+        <logger name="org.flywaydb"                        level="INFO"/>
+    </springProfile>
+
+    <!-- ─── Staging: same as prod but with DEBUG for qualscore package ───── -->
+    <springProfile name="staging">
+        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>{"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%level","app":"${APP_NAME}","env":"${APP_ENV}","requestId":"%X{requestId:-}","remoteIp":"%X{remoteIp:-}","logger":"%logger{40}","message":"%replace(%msg){'\"','\\\"'}","thread":"%thread"}%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+        <logger name="com.qualscore" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </logger>
+        <logger name="org.springframework.web"             level="WARN"/>
+        <logger name="org.hibernate.SQL"                   level="WARN"/>
+        <logger name="org.flywaydb"                        level="INFO"/>
+    </springProfile>
+
+</configuration>

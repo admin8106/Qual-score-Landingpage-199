@@ -1,0 +1,127 @@
+spring:
+  datasource:
+    # DATABASE_URL is required in production. No localhost fallback — fail fast if unset.
+    # Render, Railway, and similar platforms inject this automatically.
+    url: ${DATABASE_URL:${DB_URL:}}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:2}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1
+
+  flyway:
+    url: ${DATABASE_URL:${DB_URL:}}
+    user: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    enabled: true
+    out-of-order: false
+    validate-on-migrate: true
+
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+server:
+  port: ${PORT:8080}
+  compression:
+    enabled: true
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+app:
+  environment: prod
+  # FRONTEND_URL must be set in the Render environment dashboard.
+  # Used to build deep-links in email and WhatsApp notifications sent to candidates.
+  base-url: ${FRONTEND_URL:https://app.qualscore.in}
+
+cors:
+  # CORS_ALLOWED_ORIGINS must be set in the deployment platform environment.
+  # No localhost fallback in production — requests from unknown origins are blocked.
+  allowed-origins: >
+    ${CORS_ALLOWED_ORIGINS:https://qualscore.in,https://www.qualscore.in}
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+admin:
+  seed:
+    enabled: ${ADMIN_SEED_ENABLED:false}
+
+integrations:
+  environment-mode: ${ENVIRONMENT_MODE:LIVE}
+
+  openai:
+    enabled: ${OPENAI_ENABLED:true}
+    api-key: ${OPENAI_API_KEY:}
+    max-retries: ${OPENAI_MAX_RETRIES:1}
+
+  payment:
+    provider: ${INTEGRATIONS_PAYMENT_PROVIDER:razorpay}
+
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+
+  payu:
+    merchant-key: ${PAYU_MERCHANT_KEY:}
+    merchant-salt: ${PAYU_MERCHANT_SALT:}
+    base-url: ${PAYU_BASE_URL:https://secure.payu.in}
+
+  whatsapp:
+    provider: ${WHATSAPP_PROVIDER:stub}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    business-account-id: ${WHATSAPP_BUSINESS_ACCOUNT_ID:}
+    webhook-verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:}
+
+  email:
+    provider: ${EMAIL_PROVIDER:stub}
+    from-address: ${EMAIL_FROM_ADDRESS:reports@qualscore.in}
+    from-name: ${EMAIL_FROM_NAME:QualScore}
+    resend-api-key: ${RESEND_API_KEY:}
+
+  crm:
+    provider: ${CRM_PROVIDER:stub}
+    enabled: ${CRM_ENABLED:false}
+    api-key: ${CRM_API_KEY:}
+    api-url: ${CRM_API_URL:}
+    webhook-url: ${CRM_WEBHOOK_URL:}
+    webhook-secret: ${CRM_WEBHOOK_SECRET:}
+
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:true}
+  public-rpm: ${RATE_LIMIT_PUBLIC_RPM:60}
+  admin-rpm: ${RATE_LIMIT_ADMIN_RPM:120}
+
+logging:
+  level:
+    root: INFO
+    com.qualscore: ${LOG_LEVEL:INFO}
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.flywaydb: INFO

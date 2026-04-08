@@ -1,0 +1,59 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:qualcore_test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;NON_KEYWORDS=USER
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+  flyway:
+    enabled: false
+
+app:
+  environment: test
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+integrations:
+  payment:
+    provider: mock
+  openai:
+    api-key:
+    enabled: false
+  proxycurl:
+    api-key:
+  whatsapp:
+    api-key:
+  resend:
+    api-key:
+  crm:
+    api-key:
+  slack:
+    webhook-url:
+  calendly:
+    api-key:
+
+security:
+  jwt:
+    secret: test-secret-key-for-unit-tests-only-not-for-production-use
+    expiration-ms: 86400000
+
+rate-limit:
+  enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.qualscore: INFO
+    org.springframework.web: WARN
+    org.hibernate: WARN
