@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS candidate_profiles (
     mobile_number           VARCHAR(20) NOT NULL,
     email                   TEXT NOT NULL,
     location                TEXT,
-    "current_role"          TEXT,
+    current_role          TEXT,
     total_experience_years  VARCHAR(10),
     career_stage            VARCHAR(30)
         CHECK (career_stage IN ('FRESHER', 'WORKING_PROFESSIONAL')),
