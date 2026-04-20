@@ -1,0 +1,170 @@
+package com.qualscore.qualcore.linkedin;
+
+import com.qualscore.qualcore.enums.LinkedInIngestionMode;
+import lombok.Builder;
+import lombok.Data;
+
+import java.util.List;
+
+/**
+ * The canonical structured output of a LinkedIn profile analysis.
+ *
+ * All 13 dimension scores are integers on a 1–10 scale.
+ * The {@code linkedinScore} is a weighted composite, normalized to 1.0–10.0 (1 decimal place).
+ *
+ * This object is the single source of truth regardless of which analysis path produced it:
+ *   - Rule-based mock (current default)
+ *   - Manual profile text ingestion
+ *   - Enrichment API (e.g. Proxycurl + LLM)
+ *   - Internal parser
+ *   - AI Prompt A (strict JSON mode)
+ *
+ * ─────────────────────────────────────────────────────────
+ * Dimension Scoring Guide (1–10 per dimension):
+ *   1–3  = Weak / Missing
+ *   4–6  = Average / Partial
+ *   7–9  = Good / Complete
+ *   10   = Excellent / Standout
+ * ─────────────────────────────────────────────────────────
+ *
+ * linkedinScore Weights (must sum to 1.0):
+ *   headlineClarity          0.10
+ *   roleClarity              0.08
+ *   profileCompleteness      0.12
+ *   aboutQuality             0.08
+ *   experiencePresentation   0.12
+ *   proofOfWorkVisibility    0.10
+ *   certificationsSignal     0.05
+ *   recommendationSignal     0.05
+ *   activityVisibility       0.08
+ *   careerConsistency        0.08
+ *   growthProgression        0.07
+ *   differentiationStrength  0.05
+ *   recruiterAttractiveness  0.02
+ *
+ * Total = 1.00
+ * ─────────────────────────────────────────────────────────
+ */
+@Data
+@Builder
+public class LinkedInAnalysisOutput {
+
+    /**
+     * How clear and compelling the LinkedIn headline is.
+     * Poor: default job title. Good: keyword-rich value statement.
+     */
+    private int headlineClarity;
+
+    /**
+     * How clearly the profile communicates the candidate's target/current role.
+     */
+    private int roleClarity;
+
+    /**
+     * Overall profile completeness — photo, headline, about, experience, education.
+     */
+    private int profileCompleteness;
+
+    /**
+     * Quality of the "About" section — storytelling, keywords, call to action.
+     */
+    private int aboutQuality;
+
+    /**
+     * How well work experiences are described — results, impact, quantification.
+     */
+    private int experiencePresentation;
+
+    /**
+     * Presence of proof-of-work artifacts — links, projects, portfolios, publications.
+     */
+    private int proofOfWorkVisibility;
+
+    /**
+     * Signal from certifications — relevance, recency, quantity.
+     */
+    private int certificationsSignal;
+
+    /**
+     * Quality and quantity of LinkedIn recommendations from peers/managers.
+     */
+    private int recommendationSignal;
+
+    /**
+     * Activity level on LinkedIn — posts, shares, comments, engagement.
+     */
+    private int activityVisibility;
+
+    /**
+     * Consistency of career progression — logical role transitions, no unexplained gaps.
+     */
+    private int careerConsistency;
+
+    /**
+     * Evidence of growth — promotions, expanded responsibilities, increasing seniority.
+     */
+    private int growthProgression;
+
+    /**
+     * How differentiated the profile is from peers — unique positioning, niche signals.
+     */
+    private int differentiationStrength;
+
+    /**
+     * Overall recruiter attractiveness — how likely a recruiter is to shortlist this profile.
+     * Composite impression score.
+     */
+    private int recruiterAttractiveness;
+
+    /**
+     * Short analytical notes about the profile (max 3 items).
+     * Used for report generation and CRM context.
+     */
+    private List<String> summaryNotes;
+
+    /**
+     * Top 3 profile strengths identified.
+     */
+    private List<String> topStrengths;
+
+    /**
+     * Top 3 profile concerns or gaps identified.
+     */
+    private List<String> topConcerns;
+
+    /**
+     * Composite LinkedIn score normalized to 1.0–10.0 scale, 1 decimal place.
+     * Computed by {@code LinkedInScoreNormalizer} using the weights defined above.
+     */
+    private double linkedinScore;
+
+    /**
+     * The ingestion source that produced this output.
+     * Matches {@link LinkedInProfileInput#getSourceType()}.
+     */
+    private String sourceType;
+
+    /**
+     * The ingestion mode that produced this analysis.
+     * Drives confidence and coverage reporting.
+     */
+    private LinkedInIngestionMode ingestionMode;
+
+    /**
+     * How confident the analysis is given the available input data.
+     * LOW = URL_ONLY (rule-based). MEDIUM = text provided. HIGH = enriched. NONE = fallback.
+     */
+    private LinkedInIngestionMode.AnalysisConfidence analysisConfidence;
+
+    /**
+     * How much of the LinkedIn profile was covered by the ingestion.
+     * NONE = no data. PARTIAL = some fields. FULL = complete profile data.
+     */
+    private LinkedInIngestionMode.AnalysisCoverage analysisCoverage;
+
+    /**
+     * Whether this output was generated by a real enrichment/analysis pipeline
+     * or by the rule-based mock fallback.
+     */
+    private boolean mock;
+}

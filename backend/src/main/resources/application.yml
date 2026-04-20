@@ -1,0 +1,237 @@
+spring:
+  application:
+    name: qualcore
+
+  datasource:
+    # DATABASE_URL is the primary variable (Render/Railway inject this automatically).
+    # Falls back to the individual DB_URL / DB_USERNAME / DB_PASSWORD triplet for
+    # local development and custom Postgres deployments.
+    url: ${DATABASE_URL:${DB_URL:jdbc:postgresql://localhost:5432/qualcore}}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: QualCorePool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    url: ${DATABASE_URL:${DB_URL:jdbc:postgresql://localhost:5432/qualcore}}
+    user: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    out-of-order: false
+    validate-on-migrate: true
+    schemas: public
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+    time-zone: UTC
+
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+    mime-types: application/json,text/plain
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    loggers:
+      enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    db:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${APP_ENV:local}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.90, 0.95, 0.99
+      slo:
+        http.server.requests: 100ms, 250ms, 500ms, 1s, 2s
+  info:
+    env:
+      enabled: true
+    git:
+      enabled: false
+
+info:
+  app:
+    name: ${spring.application.name}
+    version: ${app.version:1.0.0}
+    description: QualScore Employability Diagnostic API
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    try-it-out-enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+    doc-expansion: none
+
+app:
+  version: 1.0.0
+  environment: ${APP_ENV:local}
+  # Public-facing frontend URL used in email/WhatsApp links.
+  # Set FRONTEND_URL in production to your actual domain (e.g. https://app.qualscore.in).
+  # app.base-url is the internal config key; FRONTEND_URL is the canonical env-var name.
+  base-url: ${FRONTEND_URL:${APP_BASE_URL:http://localhost:5173}}
+
+cors:
+  allowed-origins: >
+    ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:4173}
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:change-this-in-production-use-a-long-random-string}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  bcrypt-strength: ${BCRYPT_STRENGTH:12}
+
+admin:
+  seed:
+    enabled: ${ADMIN_SEED_ENABLED:true}
+  email: ${ADMIN_EMAIL:admin@qualscore.in}
+  password: ${ADMIN_PASSWORD:Admin@2024!}
+  full-name: ${ADMIN_FULL_NAME:QualScore Admin}
+
+integrations:
+  environment-mode: ${ENVIRONMENT_MODE:SANDBOX}
+  cache:
+    refresh-interval-ms: ${INTEGRATION_CACHE_REFRESH_MS:60000}
+
+  # ── Payment gateway abstraction ─────────────────────────────────────────
+  # provider: mock (default) | razorpay | payu
+  # Set INTEGRATIONS_PAYMENT_PROVIDER env var to activate a real gateway.
+  payment:
+    provider: ${INTEGRATIONS_PAYMENT_PROVIDER:mock}
+
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:}
+    key-secret: ${RAZORPAY_KEY_SECRET:}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:}
+
+  payu:
+    merchant-key: ${PAYU_MERCHANT_KEY:}
+    merchant-salt: ${PAYU_MERCHANT_SALT:}
+    base-url: ${PAYU_BASE_URL:https://test.payu.in}
+
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: ${OPENAI_MODEL:gpt-4o}
+    max-tokens: ${OPENAI_MAX_TOKENS:2000}
+    temperature: ${OPENAI_TEMPERATURE:0.2}
+    timeout-seconds: ${OPENAI_TIMEOUT_SECONDS:60}
+    max-retries: ${OPENAI_MAX_RETRIES:1}
+    enabled: ${OPENAI_ENABLED:false}
+
+  proxycurl:
+    api-key: ${PROXYCURL_API_KEY:}
+
+  whatsapp:
+    provider: ${WHATSAPP_PROVIDER:stub}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    business-account-id: ${WHATSAPP_BUSINESS_ACCOUNT_ID:}
+    webhook-verify-token: ${WHATSAPP_WEBHOOK_VERIFY_TOKEN:}
+    api-version: ${WHATSAPP_API_VERSION:v19.0}
+    timeout-seconds: ${WHATSAPP_TIMEOUT_SECONDS:15}
+    max-retries: ${WHATSAPP_MAX_RETRIES:2}
+
+  resend:
+    api-key: ${RESEND_API_KEY:}
+
+  email:
+    provider: ${EMAIL_PROVIDER:stub}
+    from-address: ${EMAIL_FROM_ADDRESS:reports@qualscore.in}
+    from-name: ${EMAIL_FROM_NAME:QualScore}
+    reply-to: ${EMAIL_REPLY_TO:}
+    resend-api-key: ${RESEND_API_KEY:}
+    timeout-seconds: ${EMAIL_TIMEOUT_SECONDS:15}
+
+  crm:
+    provider: ${CRM_PROVIDER:stub}
+    enabled: ${CRM_ENABLED:true}
+    api-key: ${CRM_API_KEY:}
+    api-url: ${CRM_API_URL:}
+    owner-id: ${CRM_OWNER_ID:}
+    webhook-url: ${CRM_WEBHOOK_URL:}
+    webhook-secret: ${CRM_WEBHOOK_SECRET:}
+    webhook-auth-header: ${CRM_WEBHOOK_AUTH_HEADER:Authorization}
+    webhook-auth-prefix: ${CRM_WEBHOOK_AUTH_PREFIX:Bearer }
+    timeout-seconds: ${CRM_TIMEOUT_SECONDS:10}
+    max-retries: ${CRM_MAX_RETRIES:2}
+
+  slack:
+    webhook-url: ${SLACK_WEBHOOK_URL:}
+
+  calendly:
+    api-key: ${CALENDLY_API_KEY:}
+    event-type-uri: ${CALENDLY_EVENT_TYPE_URI:}
+
+rate-limit:
+  enabled: ${RATE_LIMIT_ENABLED:false}
+  public-rpm: ${RATE_LIMIT_PUBLIC_RPM:60}
+  admin-rpm: ${RATE_LIMIT_ADMIN_RPM:120}
+
+logging:
+  level:
+    root: INFO
+    com.qualscore: ${LOG_LEVEL:DEBUG}
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{requestId:--}] [%X{remoteIp:--}] %logger{36} - %msg%n"
